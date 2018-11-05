@@ -129,7 +129,7 @@ public class Kafka09ConsumerClient<K, V> extends AbstractBaseKafkaConsumerClient
   public long getEarliestOffset(KafkaPartition partition) throws KafkaOffsetRetrievalFailureException {
     TopicPartition topicPartition = new TopicPartition(partition.getTopicName(), partition.getId());
     this.consumer.assign(Collections.singletonList(topicPartition));
-    this.consumer.seekToBeginning(topicPartition);
+    this.consumer.seekToBeginning(Collections.singletonList(topicPartition));
 
     return this.consumer.position(topicPartition);
   }
@@ -138,7 +138,7 @@ public class Kafka09ConsumerClient<K, V> extends AbstractBaseKafkaConsumerClient
   public long getLatestOffset(KafkaPartition partition) throws KafkaOffsetRetrievalFailureException {
     TopicPartition topicPartition = new TopicPartition(partition.getTopicName(), partition.getId());
     this.consumer.assign(Collections.singletonList(topicPartition));
-    this.consumer.seekToEnd(topicPartition);
+    this.consumer.seekToEnd(Collections.singletonList(topicPartition));
 
     return this.consumer.position(topicPartition);
   }

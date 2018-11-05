@@ -57,6 +57,8 @@ import org.apache.gobblin.writer.WatermarkStorage;
 
 import lombok.ToString;
 
+import static java.util.Collections.singleton;
+
 
 /**
  * An implementation of {@link StreamingExtractor}  which reads from Kafka and returns records . Type of record depends on deserializer set.
@@ -79,7 +81,7 @@ public class KafkaSimpleStreamingExtractor<S, D> extends EventBasedExtractor<S, 
     KafkaWatermark watermark = (KafkaWatermark) watermarkMap.get(_partition.toString());
     if (watermark == null) {
       LOG.info("Offset is null - seeking to beginning of topic and partition for {} ", _partition.toString());
-      _consumer.seekToBeginning(_partition);
+      _consumer.seekToBeginning(singleton(_partition));
     } else {
       // seek needs to go one past the last committed offset
       LOG.info("Offset found in consumer for partition {}. Seeking to one past what we found : {}",

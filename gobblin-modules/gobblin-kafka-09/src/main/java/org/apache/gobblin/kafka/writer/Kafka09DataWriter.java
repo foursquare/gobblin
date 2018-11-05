@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
+import kafka.admin.RackAwareMode;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -157,7 +158,7 @@ public class Kafka09DataWriter<D> implements AsyncDataWriter<D> {
        return;
     } 
     try {
-       AdminUtils.createTopic(zkUtils, topicName, partitions, replication, topicConfig);
+       AdminUtils.createTopic(zkUtils, topicName, partitions, replication, topicConfig, new RackAwareMode.Safe$());
     } catch (RuntimeException e) {
        throw new RuntimeException(e);
     }
