@@ -165,7 +165,7 @@ public class KafkaWrapper implements Closeable {
    */
   private class KafkaOldAPI extends KafkaAPI {
     private static final int DEFAULT_KAFKA_TIMEOUT_VALUE = 30000;
-    private static final int DEFAULT_KAFKA_BUFFER_SIZE = 1024 * 1024 * 10;
+    private static final int DEFAULT_KAFKA_BUFFER_SIZE = 1024 * 1024 * 50;
     private static final String DEFAULT_KAFKA_CLIENT_NAME = "kafka-old-api";
     private static final int DEFAULT_KAFKA_FETCH_REQUEST_CORRELATION_ID = -1;
     private static final int DEFAULT_KAFKA_FETCH_REQUEST_MIN_BYTES = 1024;
