@@ -151,6 +151,7 @@ public abstract class KafkaExtractor<S, D> extends EventBasedExtractor<S, D> {
           D record = decodeRecord(nextValidMessage);
           this.currentPartitionRecordCount++;
           this.currentPartitionTotalSize += nextValidMessage.message().payloadSize();
+          LOG.info(String.format("KafkaExtractor record %s topic %s currentPartitionRecordCount %d currentPartitionTotalSize %f ", record, this.topicName, this.currentPartitionRecordCount, this.currentPartitionTotalSize));
           return record;
         } catch (Throwable t) {
           this.errorPartitions.add(this.currentPartitionIdx);
