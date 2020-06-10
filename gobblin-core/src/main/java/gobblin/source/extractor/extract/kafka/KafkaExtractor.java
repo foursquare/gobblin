@@ -113,45 +113,57 @@ public abstract class KafkaExtractor<S, D> extends EventBasedExtractor<S, D> {
    */
   @Override
   public D readRecordImpl(D reuse) throws DataRecordException, IOException {
+    LOG.info("CUSTOM readRecordImpl Entry");
     while (!allPartitionsFinished()) {
+      LOG.info("CUSTOM allPartitionsFinished");
       if (currentPartitionFinished()) {
+        LOG.info("CUSTOM currentPartitionFinished");
         moveToNextPartition();
         continue;
       }
       if (this.messageIterator == null || !this.messageIterator.hasNext()) {
+        LOG.info("CUSTOM messageIterator is null or no hasNext");
         try {
           this.messageIterator = fetchNextMessageBuffer();
         } catch (Exception e) {
           LOG.error(String.format("Failed to fetch next message buffer for partition %s. Will skip this partition.",
               getCurrentPartition()), e);
+          LOG.info("CUSTOM Failed to fetch next message buffer for partition %s. Will skip this partition");
           moveToNextPartition();
           continue;
         }
         if (this.messageIterator == null || !this.messageIterator.hasNext()) {
+          LOG.info("CUSTOM next messageIterator is null or no hasNext");
           moveToNextPartition();
           continue;
         }
       }
       while (!currentPartitionFinished()) {
+        LOG.info("CUSTOM !allPartitionsFinished");
         if (!this.messageIterator.hasNext()) {
+          LOG.info("CUSTOM !allPartitionsFinished !messageIterator.hasNext");
           break;
         }
 
         MessageAndOffset nextValidMessage = this.messageIterator.next();
+        LOG.info("CUSTOM nextValidMessage = " + nextValidMessage);
 
         // Even though we ask Kafka to give us a message buffer starting from offset x, it may
         // return a buffer that starts from offset smaller than x, so we need to skip messages
         // until we get to x.
         if (nextValidMessage.offset() < this.nextWatermark.get(this.currentPartitionIdx)) {
+          LOG.info("CUSTOM nextValidMessage.offset < nextWatermark");
           continue;
         }
 
         this.nextWatermark.set(this.currentPartitionIdx, nextValidMessage.nextOffset());
         try {
+          LOG.info("CUSTOM Stepping into decodeRecord");
           D record = decodeRecord(nextValidMessage);
+          LOG.info("CUSTOM decodeRecord "+ record);
           this.currentPartitionRecordCount++;
           this.currentPartitionTotalSize += nextValidMessage.message().payloadSize();
-          LOG.info(String.format("KafkaExtractor record %s topic %s currentPartitionRecordCount %d currentPartitionTotalSize %f ", record, this.topicName, this.currentPartitionRecordCount, this.currentPartitionTotalSize));
+          LOG.info(String.format("CUSTOM KafkaExtractor record %s topic %s currentPartitionRecordCount %d currentPartitionTotalSize %f ", record, this.topicName, this.currentPartitionRecordCount, this.currentPartitionTotalSize));
           return record;
         } catch (Throwable t) {
           this.errorPartitions.add(this.currentPartitionIdx);
