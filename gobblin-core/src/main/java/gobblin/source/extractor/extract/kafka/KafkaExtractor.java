@@ -113,16 +113,12 @@ public abstract class KafkaExtractor<S, D> extends EventBasedExtractor<S, D> {
    */
   @Override
   public D readRecordImpl(D reuse) throws DataRecordException, IOException {
-    LOG.info("CUSTOM readRecordImpl Entry");
     while (!allPartitionsFinished()) {
-      LOG.info("CUSTOM allPartitionsFinished");
       if (currentPartitionFinished()) {
-        LOG.info("CUSTOM currentPartitionFinished");
         moveToNextPartition();
         continue;
       }
       if (this.messageIterator == null || !this.messageIterator.hasNext()) {
-        LOG.info("CUSTOM messageIterator is null or no hasNext");
         try {
           this.messageIterator = fetchNextMessageBuffer();
         } catch (Exception e) {
@@ -133,15 +129,12 @@ public abstract class KafkaExtractor<S, D> extends EventBasedExtractor<S, D> {
           continue;
         }
         if (this.messageIterator == null || !this.messageIterator.hasNext()) {
-          LOG.info("CUSTOM next messageIterator is null or no hasNext");
           moveToNextPartition();
           continue;
         }
       }
       while (!currentPartitionFinished()) {
-        LOG.info("CUSTOM !allPartitionsFinished");
         if (!this.messageIterator.hasNext()) {
-          LOG.info("CUSTOM !allPartitionsFinished !messageIterator.hasNext");
           break;
         }
 
@@ -152,16 +145,18 @@ public abstract class KafkaExtractor<S, D> extends EventBasedExtractor<S, D> {
         // return a buffer that starts from offset smaller than x, so we need to skip messages
         // until we get to x.
         if (nextValidMessage.offset() < this.nextWatermark.get(this.currentPartitionIdx)) {
-          LOG.info("CUSTOM nextValidMessage.offset < nextWatermark");
           continue;
         }
 
         this.nextWatermark.set(this.currentPartitionIdx, nextValidMessage.nextOffset());
         try {
-          LOG.info("CUSTOM Stepping into decodeRecord");
           D record = decodeRecord(nextValidMessage);
           LOG.info("CUSTOM decodeRecord "+ record);
           this.currentPartitionRecordCount++;
+          LOG.info("CUSTOM--> currentPartitionRecordCount " + this.currentPartitionRecordCount +" offset = "+ nextValidMessage.offset());
+          LOG.info(String.format("CUSTOM-->KafkaExtractor record %s topic %s currentPartitionRecordCount %d currentPartitionTotalSize %f ", record, this.topicName, this.currentPartitionRecordCount, this.currentPartitionTotalSize));
+          LOG.info("CUSTOM print nextValidMessage "+ nextValidMessage.message());
+          LOG.info("CUSTOM print nextValidMessage payloadSize "+ nextValidMessage.message().payloadSize());
           this.currentPartitionTotalSize += nextValidMessage.message().payloadSize();
           LOG.info(String.format("CUSTOM KafkaExtractor record %s topic %s currentPartitionRecordCount %d currentPartitionTotalSize %f ", record, this.topicName, this.currentPartitionRecordCount, this.currentPartitionTotalSize));
           return record;
@@ -170,6 +165,7 @@ public abstract class KafkaExtractor<S, D> extends EventBasedExtractor<S, D> {
           this.undecodableMessageCount++;
           if (shouldLogError()) {
             LOG.error(String.format("A record from partition %s cannot be decoded.", getCurrentPartition()), t);
+            LOG.info(String.format("CUSTOM-->A record from partition %s cannot be decoded.", getCurrentPartition()), t);
             incrementErrorCount();
           }
         }
